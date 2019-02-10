@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-analytics
+  labels:
+    app: mongo-analytics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-analytics
+  template:
+    metadata:
+      labels:
+        app: mongo-analytics
+    spec:
+      containers:
+        - name: mongo-analytics
+          image: mongo:4.0.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 27017
+          envFrom:
+            - configMapRef:
+                name: mongo-analytics-config
+          volumeMounts:
+            - mountPath: /data/db
+              name: mongoanalyticsvolume
+      volumes:
+        - name: mongoanalyticsvolume
+          persistentVolumeClaim:
+            claimName: mongo-analytics-pvc

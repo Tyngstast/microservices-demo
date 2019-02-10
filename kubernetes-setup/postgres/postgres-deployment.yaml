@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-ms
+  labels:
+    app: postgres-ms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-ms
+  template:
+    metadata:
+      labels:
+        app: postgres-ms
+    spec:
+      containers:
+        - name: postgres-ms
+          image: postgres:10.4
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: postgres-ms-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data/ms
+              name: postgresmsdb
+      volumes:
+        - name: postgresmsdb
+          persistentVolumeClaim:
+            claimName: postgres-ms-pvc

@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: liquor-store
+  labels:
+    app: liquor-store
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: liquor-store
+  template:
+    metadata:
+      name: liquor-store
+      labels:
+        app: liquor-store
+    spec:
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: liquor-store
+        image: henrj/liquor-store:0.0.1-SNAPSHOT
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 8081
+            protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8081
+          initialDelaySeconds: 40
+          periodSeconds: 15
+        env:
+        - name: GATEWAY_SERVICE_HOST
+          value: edge-service-zuul-service
+        - name: GATEWAY_SERVICE_PORT
+          value: "8888"
+        - name: KEYCLOAK_SERVICE_HOST
+          value: "192.168.99.100"
+        - name: KEYCLOAK_SERVICE_PORT
+          value: "30080"
+        - name: OIDC_CLIENT-SECRET
+          value: a01a7901-95f1-45aa-ae58-d423aec3f99c
+        - name: ZIPKIN_SERVICE_HOST
+          value: zipkin-service
+          # Disable Eureka to make room for KubernetesDiscoveryClientAutoConfiguration
+        - name: SPRING_AUTOCONFIGURE_EXCLUDE
+          value: org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration
+        - name: EUREKA_CLIENT_ENABLED
+          value: "false"
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 400m
+            memory: 512Mi

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongo-analytics-config
+  labels:
+    app: mongo-analytics
+data: 
+  MONGO_INITDB_ROOT_USERNAME: springuser
+  MONGO_INITDB_ROOT_PASSWORD: password
+  MONGO_INITDB_DATABASE: analytics

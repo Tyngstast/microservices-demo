@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: edge-service-zuul-service
+  labels:
+    app: edge-service-zuul
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8888
+      nodePort: 30888
+  selector:
+    app: edge-service-zuul

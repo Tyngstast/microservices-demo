@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-ms-config
+  labels:
+    app: postgres-ms
+data: 
+  POSTGRES_DB: ms
+  POSTGRES_USER: springuser
+  POSTGRES_PASSWORD: password
+  PGDATA: /var/lib/postgresql/data/ms

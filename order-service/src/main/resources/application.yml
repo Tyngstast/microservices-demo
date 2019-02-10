@@ -1,0 +1,51 @@
+DATABASE_HOST: localhost
+KAFKA_URL: localhost:9092
+KEYCLOAK_SERVICE_HOST: localhost
+KEYCLOAK_SERVICE_PORT: 9999
+ZIPKIN_SERVICE_HOST: localhost
+
+server:
+  port: 8087
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: jdbc:postgresql://${DATABASE_HOST}:5432/ms
+    username: springuser
+    password: password
+    tomcat:
+      validation-query: SELECT 1
+      test-on-borrow: true
+    type: org.postgresql.ds.PGPoolingDataSource
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        temp:
+          use_jdbc_metadata_defaults: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KEYCLOAK_SERVICE_HOST}:${KEYCLOAK_SERVICE_PORT}/auth/realms/playground
+  sleuth:
+    sampler:
+      probability: 1
+  zipkin:
+    base-url: http://${ZIPKIN_SERVICE_HOST}:9411/
+  autoconfigure:
+    exclude: org.springframework.cloud.kubernetes.discovery.KubernetesDiscoveryClientAutoConfiguration
+eureka:
+  client:
+    service-url:
+      default-zone: http://localhost:8761/eureka
+  instance:
+    lease-renewal-interval-in-seconds: 20
+
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: DEBUG

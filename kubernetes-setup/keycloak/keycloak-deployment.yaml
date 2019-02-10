@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  labels:
+    app: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      name: keycloak
+      labels:
+        app: keycloak
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: keycloak
+        image: jboss/keycloak:4.5.0.Final
+        imagePullPolicy: IfNotPresent
+        readinessProbe:
+          httpGet:
+            path: /auth
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 15
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 300m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1024Mi
+        env:
+        - name: KEYCLOAK_LOGLEVEL
+          value: "DEBUG"
+        - name: PROXY_ADDRESS_FORWARDING
+          value: "true"
+        - name: KEYCLOAK_USER
+          value: "admin"
+        - name: KEYCLOAK_PASSWORD
+          value: "admin"
+        - name: DB_VENDOR
+          value: "postgres"
+        - name: DB_ADDR 
+          value: "postgres-keycloak-service"
+        - name: DB_DATABASE
+          value: "keycloak_db"
+        - name: DB_USER
+          value: "keycloak"
+        - name: DB_PASSWORD
+          value: "password"

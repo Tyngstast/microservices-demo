@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customer
+  labels:
+    app: customer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: customer
+  template:
+    metadata:
+      name: customer
+      labels:
+        app: customer
+    spec:
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: customer
+        image: henrj/customer-service:0.0.1-SNAPSHOT
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 8085
+            protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8085
+          initialDelaySeconds: 40
+          periodSeconds: 15
+        env:
+        - name: DATABASE_HOST
+          value: postgres-ms-service
+        - name: KEYCLOAK_SERVICE_HOST
+          value: "192.168.99.100"
+        - name: KEYCLOAK_SERVICE_PORT
+          value: "30080"
+        - name: ZIPKIN_SERVICE_HOST
+          value: zipkin-service
+          # Disable Eureka to make room for KubernetesDiscoveryClientAutoConfiguration
+        - name: SPRING_AUTOCONFIGURE_EXCLUDE
+          value: org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration
+        - name: EUREKA_CLIENT_ENABLED
+          value: "false"
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 400m
+            memory: 512Mi

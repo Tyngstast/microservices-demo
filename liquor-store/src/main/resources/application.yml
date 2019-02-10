@@ -1,0 +1,73 @@
+KEYCLOAK_SERVICE_HOST: localhost
+KEYCLOAK_SERVICE_PORT: 9999
+KAFKA_URL: localhost:9092
+GATEWAY_SERVICE_HOST: localhost
+GATEWAY_SERVICE_PORT: 8888
+GATEWAY_URL: http://${GATEWAY_SERVICE_HOST}:${GATEWAY_SERVICE_PORT}
+CUSTOMERS_URL: ${GATEWAY_URL}/customer-service/customers/
+ORDERS_URL: ${GATEWAY_URL}/order-service/orders/
+BEERS_URL: ${GATEWAY_URL}/beer-service/beers/
+#CUSTOMERS_URL: http://localhost:8085/customers/
+#ORDERS_URL: http://localhost:8087/orders/
+#BEERS_URL: http://localhost:8083/beers/
+ZIPKIN_SERVICE_HOST: localhost
+
+oidc:
+  issuer-uri: http://${KEYCLOAK_SERVICE_HOST}:${KEYCLOAK_SERVICE_PORT}/auth/realms/playground
+  client-id: ms-pg
+  client-secret: c12b2ec5-4e16-4ec3-b8ee-be54347f4b0d
+
+server:
+  port: 8081
+
+spring:
+  autoconfigure:
+    exclude: org.springframework.cloud.kubernetes.discovery.KubernetesDiscoveryClientAutoConfiguration
+  security:
+    oauth2:
+      client:
+        registration:
+          ms-pg:
+            provider: keycloak
+            client-id: ${oidc.client-id}
+            client-secret: ${oidc.client-secret}
+            authorization-grant-type: authorization_code
+            redirect-uri-template: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: openid profile email beers orders customers
+        provider:
+          keycloak:
+            authorization-uri: ${oidc.issuer-uri}/protocol/openid-connect/auth
+            token-uri: ${oidc.issuer-uri}/protocol/openid-connect/token
+            user-info-uri: ${oidc.issuer-uri}/protocol/openid-connect/userinfo
+            user-name-attribute: sub
+            jwk-set-uri: ${oidc.issuer-uri}/protocol/openid-connect/certs
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KEYCLOAK_SERVICE_HOST}:${KEYCLOAK_SERVICE_PORT}/auth/realms/playground
+  application:
+    name: liquor-store
+  sleuth:
+    sampler:
+      probability: 1
+  zipkin:
+    base-url: http://${ZIPKIN_SERVICE_HOST}:9411/
+eureka:
+  client:
+    service-url:
+      default-zone: http://localhost:8761/eureka
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.cloud.netflix: DEBUG
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  metrics:
+    binders:
+      jvm:
+        enabled: false
